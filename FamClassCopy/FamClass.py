@@ -13,13 +13,17 @@ import os
 import cv2 
 import imghdr 
 import numpy as np 
+# import albumentations as alb
 from matplotlib import pyplot as plt
 
 
 from tensorflow.keras.applications import VGG16 # pretrained neural network
+# from tensorflow.keras.applications.vgg16 import preprocess_input
+
 from tensorflow.keras.models import load_model
 from tensorflow.keras.models import Sequential # 2 specific model apis in keras
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout # droptout not used 
+from tensorflow.keras import layers
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Dense, Flatten, Dropout # droptout not used 
 from tensorflow.keras.metrics import Precision, Recall, BinaryAccuracy
 
 
@@ -164,19 +168,53 @@ train
 # Dropout: used for regularisation
 # from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout 
 
+
+
+
 # Create a sequential model that will be trained
-model = Sequential()
+model = Sequential([
+  layers.RandomFlip("horizontal_and_vertical"),
+  layers.RandomRotation(0.2),
+  layers.RandomZoom(0.1),
+])
 # Can be done like this as well: 
 # model = Sequential([Conv2D(), .. ect])
 
 ##################################################################
 
+## Data Augmentation 
+# data_augmentation = Sequential([
+#   layers.RandomFlip("horizontal_and_vertical"),
+#   layers.RandomRotation(0.2),
+#   layers.RandomZoom(0.1),
+# ])
+
+# model.add([
+#   layers.RandomFlip("horizontal_and_vertical"),
+#   layers.RandomRotation(0.2),
+#   layers.RandomZoom(0.1),
+# ])
+
+# data_augmentation = keras.Sequential([layers.RandomFlip("horizontal", input_shape=(img_height, img_width, 3)), layers.RandomRotation(0.1), layers.RandomZoom(0.1),])
+
+
 # #  Create the framework
 
-## VGG Download and setup
-# vgg = VGG16(include_top=False)
+
+
+
+
+
+# ## VGG Download and setup
+# vggmodel = VGG16(include_top=False)
 # # Does not used the later layers as we want to pipe into our classifier
-# vgg.summary()
+# vggmodel.summary()
+
+
+
+
+
+
 
 # Create a convolution with 16 filters that scans over the image
 # Extract the relevant information from that image to make a classification 
@@ -194,6 +232,7 @@ model.add(MaxPooling2D())
 # repeat 2
 model.add(Conv2D(16, (3,3), 1, activation='relu'))
 model.add(MaxPooling2D())
+# model.add(Dropout(0.2))
 
 # Flatten down to only 1 dimension 
 # max_pooling2d_2 (MaxPooling) dimensions are: (None, 30, 30, 16) 30*30*16=14400 
@@ -218,6 +257,7 @@ model.compile(optimizer='adam', loss =tf.keras.losses.SparseCategoricalCrossentr
 # , loss=tf.losses.BinaryCrossentropy()
 
 # print out a summary of the model parameters
+model.build((None, 256, 256, 3)) 
 model.summary()
 
 
