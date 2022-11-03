@@ -2,6 +2,7 @@ import argparse
 import torch
 import math
 import cv2
+import time
 
 # Uncomment this if ssl error occurs
 import ssl
@@ -46,22 +47,25 @@ class FishDetector:
 
         return bboxes
 
-    def display_bboxes(self, image, bboxes):
+    def display_bboxes(self, image, bboxes, timer=None):
 
         for bbox in bboxes:
             (bottom_left_coords, top_right_coords) = bbox
             image = cv2.rectangle(image, bottom_left_coords, top_right_coords, self.bbox_colour, 2)
 
         cv2.imshow("Bounding Boxes", image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if timer is not None:
+            cv2.waitKey(timer)
+        else:
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
     def get_rois(self, image):
 
         rois = []
 
         # Crop each detected bounding box in the image
-        bboxes = fish_detector.predict_bboxes(image)
+        bboxes = self.predict_bboxes(image)
         for bbox in bboxes:
             (bottom_left_coords, top_right_coords) = bbox
             cropped = image[bottom_left_coords[1]:top_right_coords[1], bottom_left_coords[0]:top_right_coords[0]]
