@@ -1,6 +1,7 @@
 import zipfile
 from PIL import Image
 from fishDetector import FishDetector
+from fishClassifier import FishClassifier
 import cv2
 import numpy as np
 import argparse
@@ -29,6 +30,9 @@ if __name__ == "__main__":
 
     print("Initialising detection model...")
     fish_detector = FishDetector('fish_detector.pt')
+
+    print("Initialising classifier model...")
+    fish_classifier = FishClassifier('fish_classifier.h5')
 
     # Get image folder name from the command line
     ap = argparse.ArgumentParser()
@@ -66,8 +70,7 @@ if __name__ == "__main__":
 
         # Predict fish types
         for roi in rois:
-
-            # TODO: add fish classifier predictions here
-            pass
-
+            predicted_class, confidence_score = fish_classifier.predict(roi)
+            print(predicted_class, confidence_score)
+        
         # TODO: get camera location of current image frame and add to pointcloud map
