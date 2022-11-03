@@ -9,11 +9,17 @@ clc
 q = [0.97547004, 0.02369198, 0.21203752, -0.05419399];
 
 
-ZYX = quat2eul(q,'ZYX')*180/pi;
-ZYZ = quat2eul(q,'ZYZ')*180/pi;
-XYZ = quat2eul(q,'XYZ')*180/pi;
+ZYX = quat2eul(q,'ZYX');
+ZYZ = quat2eul(q,'ZYZ');
+XYZ = quat2eul(q,'XYZ');
 
-eulers = (q2e(q'))'*180/pi;  
+eulers = (q2e(q'))';  
+
+% ZYX = quat2eul(q,'ZYX')*180/pi;
+% ZYZ = quat2eul(q,'ZYZ')*180/pi;
+% XYZ = quat2eul(q,'XYZ')*180/pi;
+% 
+% eulers = (q2e(q'))'*180/pi;  
 
 % 
 % 
