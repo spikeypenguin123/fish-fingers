@@ -47,11 +47,15 @@ class FishDetector:
 
         return bboxes
 
-    def display_bboxes(self, image, bboxes, timer=None):
+    def display_bboxes(self, image, bboxes, labels=None, timer=None):
 
+        count = 0
         for bbox in bboxes:
             (bottom_left_coords, top_right_coords) = bbox
             image = cv2.rectangle(image, bottom_left_coords, top_right_coords, self.bbox_colour, 2)
+            if labels is not None:
+                image = cv2.putText(image, labels[count], bottom_left_coords, cv2.FONT_HERSHEY_SIMPLEX, 1, self.bbox_colour, 2, cv2.LINE_AA)
+                count += 1
 
         cv2.imshow("Bounding Boxes", image)
         if timer is not None:

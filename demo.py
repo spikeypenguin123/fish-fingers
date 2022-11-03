@@ -60,17 +60,17 @@ if __name__ == "__main__":
         bboxes = fish_detector.predict_bboxes(image)
         n_detected = len(bboxes)
         print(f'Detected {n_detected} fish')
-        fish_detector.display_bboxes(image, bboxes, timer=5)
-
-        if n_detected == 0:
-            continue
 
         # Get regions of interest using fish detector
         rois = fish_detector.get_rois(image)
 
         # Predict fish types
+        labels = []
         for roi in rois:
             predicted_class, confidence_score = fish_classifier.predict(roi)
+            labels.append(predicted_class)
             print(predicted_class, confidence_score)
+
+        fish_detector.display_bboxes(image, bboxes, labels=labels, timer=5)
         
         # TODO: get camera location of current image frame and add to pointcloud map
