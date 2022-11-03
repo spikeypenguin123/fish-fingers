@@ -26,17 +26,14 @@ def increase_contrast(image):
    return new_image
 
 
-def filter_bboxes(bboxes, min_area, max_area):
+def check_area(bbox, max_area, min_area):
 
-    def check_area(bbox):
+    def get_area(bbox):
+        return (bbox[1][0] - bbox[0][0]) * (bbox[1][1] - bbox[0][1])
 
-        def get_area(bbox):
-            return (bbox[1][0] - bbox[0][0]) * (bbox[1][1] - bbox[0][1])
+    area = get_area(bbox)
+    return area < max_area and area > min_area
 
-        area = get_area(bbox)
-        return area < max_area and area > min_area
-
-    return list(filter(check_area, bboxes))
 
 
 def getNumber(filename, prefix, suffix):
@@ -50,7 +47,7 @@ if __name__ == "__main__":
     fish_detector = FishDetector('fish_detector.pt')
 
     print("Initialising classifier model...")
-    fish_classifier = FishClassifier('fish_classifier.h5')
+    fish_classifier = FishClassifier('fish_classifier.pt')
 
     # Get image folder name from the command line
     ap = argparse.ArgumentParser()
@@ -62,8 +59,7 @@ if __name__ == "__main__":
     #  Full program mode
     if mode == "f":
 
-        zip_filename = args["folder"]
-
+        zip_filename = args["dir"]
         zip_file = zipfile.ZipFile(zip_filename)
         file_list = zip_file.infolist()
 
@@ -77,7 +73,6 @@ if __name__ == "__main__":
             image = increase_contrast(image)
 
             bboxes = fish_detector.predict_bboxes(image)
-            bboxes = filter_bboxes(bboxes, 50000, 5000)
             n_detected = len(bboxes)
             print(f'Detected {n_detected} fish')
 
@@ -85,15 +80,19 @@ if __name__ == "__main__":
             rois = fish_detector.get_rois(image)
 
             # Predict fish types
+            classified_bboxes = []
             labels = []
-            for roi in rois:
-                predicted_class, confidence_score = fish_classifier.predict(roi)
-                labels.append(predicted_class)
-                print(predicted_class, confidence_score)
+            for i, roi in enumerate(rois):
+                predicted_class = fish_classifier.predict(roi)
+                if check_area(bboxes[i], 50000, 5000) and predicted_class is not None:
+                    classified_bboxes.append(bboxes[i])
+                    labels.append(predicted_class)
+                    print(f'\t{predicted_class}')
 
-            fish_detector.display_bboxes(image, bboxes, labels=labels, timer=1)
+            fish_detector.display_bboxes(image, classified_bboxes, labels=labels, timer=1)
             
             # TODO: get camera location of current image frame and add to pointcloud map
+            filename = f.filename
 
     # Classification only mode
     elif mode == "c":
@@ -112,7 +111,6 @@ if __name__ == "__main__":
             image = increase_contrast(image)
 
             bboxes = fish_detector.predict_bboxes(image)
-            # bboxes = filter_bboxes(bboxes)
             n_detected = len(bboxes)
             print(f'Detected {n_detected} fish')
 
@@ -120,11 +118,14 @@ if __name__ == "__main__":
             rois = fish_detector.get_rois(image)
 
             # Predict fish types
+            classified_bboxes = []
             labels = []
-            for roi in rois:
-                predicted_class, confidence_score = fish_classifier.predict(roi)
-                labels.append(predicted_class)
-                print(predicted_class, confidence_score)
+            for i, roi in enumerate(rois):
+                predicted_class = fish_classifier.predict(roi)
+                if predicted_class is not None:
+                    classified_bboxes.append(bboxes[i])
+                    labels.append(predicted_class)
+                    print(f'\t{predicted_class}')
 
-            fish_detector.display_bboxes(image, bboxes, labels=labels, timer=1)
+            fish_detector.display_bboxes(image, classified_bboxes, labels=labels, timer=1)
             
