@@ -6,22 +6,6 @@ import open3d as o3d
 import plotly.graph_objects as go
 
 
-# # read csv
-# df = pd.read_csv('values2.csv')
-# df.head()
-
-# # test frame
-# my_frame = 'final2849.jpg'
-
-# image = df.loc[df['frame'] == my_frame]
-# quats = image[['qw','qx','qy','qz']]
-# quaternions = quats.to_numpy()
-# print(quaternions)
-
-# trans = image[['tx','ty','tz']]
-# translation = trans.to_numpy()
-# print(translation)
-
 def quaternion_rotation_matrix(Q):
     """
     Covert a quaternion into a full three-dimensional rotation matrix.
@@ -63,33 +47,15 @@ def quaternion_rotation_matrix(Q):
     return rot_matrix
 
 
+
 def display_pointcloud(markers):
 
-    labels = ["Carangidae", "Dinolestidae", "Enoplosidae", "Girellidae", "Microcanthidae", "Plesiopidae"]
-    print(markers)
-
-    # # test frame
-    # my_frame = 'final2849.jpg'
-
-    # image = df.loc[df['frame'] == my_frame]
-    # quats = image[['qw','qx','qy','qz']]
-    # quaternions = quats.to_numpy()
-    # print(quaternions)
-
-    # trans = image[['tx','ty','tz']]
-    # translation = trans.to_numpy()
-    # print(translation)
-
-    # # get camera position
-    # rt = quaternion_rotation_matrix(quaternions.transpose())
-    # print(rt)
-
-    # coords = np.matmul(rt.transpose(),translation.transpose())
-    # print(coords)
+    # read csv
+    df = pd.read_csv('values2.csv')
+    df.head()
 
     # read cloud
     cloud = o3d.io.read_point_cloud("cloud2.ply")
-
     points = np.asarray(cloud.points)
 
     colors = None
@@ -106,7 +72,8 @@ def display_pointcloud(markers):
             go.Scatter3d(
                 x=points[:,0], y=points[:,1], z=points[:,2]*-1, 
                 mode='markers',
-                marker=dict(size=1, color=colors)
+                marker=dict(size=1, color=colors),
+                name='Terrain'
             )
         ],
         layout=dict(
@@ -118,10 +85,56 @@ def display_pointcloud(markers):
         )
     )
 
-    # camx=np.array([1,1,1]) * coords[0,0]
-    # camy=np.array([1,1,1]) * coords[0,1]
-    # camz=np.array([-1,-1,-1]) * coords[0,2]
+    def getCoords(df, filename):
 
-    # fig.add_trace(go.Scatter3d(x=camx,y=camy,z=camz,
-    #                                 mode='markers'))
+        # Get closest filename
+        all_filenames = df['frame']
+        all_numbers = list(map(lambda x: int(x[len('final'):-len('.jpg')]), all_filenames))
+
+        def find_closest(lst, val): 
+            array = np.array(lst)
+            idx = (np.abs(array - val)).argmin()
+            return array[idx]
+
+        closest_number = find_closest(all_numbers, int(filename[len('final'):-len('.jpg')]))
+        closest_filename = f'final{closest_number}.jpg'
+
+        image = df.loc[df['frame'] == closest_filename]
+        quats = image[['qw','qx','qy','qz']]
+        quaternions = quats.to_numpy()
+
+        trans = image[['tx','ty','tz']]
+        translation = trans.to_numpy()
+
+        # get camera position
+        rt = quaternion_rotation_matrix(quaternions.transpose())
+        coords = np.matmul(rt.transpose(),translation.transpose())
+        return coords
+
+    labels = ["Carangidae", "Dinolestidae", "Enoplosidae", "Girellidae", "Microcanthidae", "Plesiopidae"]
+    colors = ["LightSkyBlue", "DarkSlateGrey", "MediumPurple", "LightPink", "Chartreuse", "Violet"]
+    
+    seen_labels = []
+    legend_group = 0
+    for marker in markers:
+
+        filename, detected_labels = marker
+        if len(detected_labels) == 0:
+            continue
+
+        coords = getCoords(df, filename)
+        camx = np.array([1,1,1]) * coords[0,0]
+        camy = np.array([1,1,1]) * coords[0,1]
+        camz = np.array([-1,-1,-1]) * coords[0,2]
+
+        for label in detected_labels: 
+            color_idx = labels.index(label)
+            color = colors[color_idx]
+            if label not in seen_labels:
+                seen_labels.append(label)
+                legend_group += 1
+                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker=dict(color=[color]*3), name=label, legendgroup=f'{legend_group}'))
+            else:
+                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker=dict(color=[color]*3), name=label, legendgroup=f'{legend_group}', showlegend=False))
+
     fig.show()

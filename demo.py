@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 if check_area(bboxes[i], 50000, 5000) and predicted_class is not None:
                     classified_bboxes.append(bboxes[i])
                     labels.append(predicted_class)
-                    print(f'\t{predicted_class}')
+                    # print(f'\t{predicted_class}')
 
             fish_detector.display_bboxes(image, classified_bboxes, labels=labels, timer=1)
             
@@ -131,7 +131,7 @@ if __name__ == "__main__":
                 if predicted_class is not None:
                     classified_bboxes.append(bboxes[i])
                     labels.append(predicted_class)
-                    print(f'\t{predicted_class}')
+                    # print(f'\t{predicted_class}')
 
             fish_detector.display_bboxes(image, classified_bboxes, labels=labels, timer=1)
             
