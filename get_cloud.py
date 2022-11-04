@@ -112,7 +112,7 @@ def display_pointcloud(markers):
         return coords
 
     labels = ["Carangidae", "Dinolestidae", "Enoplosidae", "Girellidae", "Microcanthidae", "Plesiopidae"]
-    colors = ["LightSkyBlue", "DarkSlateGrey", "MediumPurple", "LightPink", "Chartreuse", "Violet"]
+    colors = ['rgb(204,0,0)', 'rgb(255,128,0)', 'rgb(255,255,51)', 'rgb(102,204,0)', 'rgb(51,255,255)', 'rgb(153,51,255)']
     
     seen_labels = []
     legend_group = 0
@@ -133,8 +133,8 @@ def display_pointcloud(markers):
             if label not in seen_labels:
                 seen_labels.append(label)
                 legend_group += 1
-                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker=dict(color=[color]*3), name=label, legendgroup=f'{legend_group}'))
+                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker_color=color, name=label, legendgroup=f'{legend_group}'))
             else:
-                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker=dict(color=[color]*3), name=label, legendgroup=f'{legend_group}', showlegend=False))
+                fig.add_trace(go.Scatter3d(x=camx, y=camy, z=camz, mode='markers', marker_color=color, name=label, legendgroup=f'{legend_group}', showlegend=False))
 
     fig.show()
