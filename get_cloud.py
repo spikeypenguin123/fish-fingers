@@ -6,21 +6,21 @@ import open3d as o3d
 import plotly.graph_objects as go
 
 
-# read csv
-df = pd.read_csv('values2.csv')
-df.head()
+# # read csv
+# df = pd.read_csv('values2.csv')
+# df.head()
 
-# test frame
-my_frame = 'final2849.jpg'
+# # test frame
+# my_frame = 'final2849.jpg'
 
-image = df.loc[df['frame'] == my_frame]
-quats = image[['qw','qx','qy','qz']]
-quaternions = quats.to_numpy()
-print(quaternions)
+# image = df.loc[df['frame'] == my_frame]
+# quats = image[['qw','qx','qy','qz']]
+# quaternions = quats.to_numpy()
+# print(quaternions)
 
-trans = image[['tx','ty','tz']]
-translation = trans.to_numpy()
-print(translation)
+# trans = image[['tx','ty','tz']]
+# translation = trans.to_numpy()
+# print(translation)
 
 def quaternion_rotation_matrix(Q):
     """
@@ -62,48 +62,66 @@ def quaternion_rotation_matrix(Q):
                             
     return rot_matrix
 
-# get camera position
-rt = quaternion_rotation_matrix(quaternions.transpose())
-print(rt)
 
-coords = np.matmul(rt.transpose(),translation.transpose())
-print(coords)
+def display_pointcloud(markers):
 
-# read cloud
-cloud = o3d.io.read_point_cloud("cloud2.ply")
+    labels = ["Carangidae", "Dinolestidae", "Enoplosidae", "Girellidae", "Microcanthidae", "Plesiopidae"]
+    print(markers)
 
-points = np.asarray(cloud.points)
+    # # test frame
+    # my_frame = 'final2849.jpg'
 
-colors = None
-if cloud.has_colors():
-    colors = np.asarray(cloud.colors)
-elif cloud.has_normals():
-    colors = (0.5, 0.5, 0.5) + np.asarray(cloud.normals) * 0.5
-else:
-    geometry.paint_uniform_color((1.0, 0.0, 0.0))
-    colors = np.asarray(geometry.colors)
+    # image = df.loc[df['frame'] == my_frame]
+    # quats = image[['qw','qx','qy','qz']]
+    # quaternions = quats.to_numpy()
+    # print(quaternions)
 
-fig = go.Figure(
-    data=[
-        go.Scatter3d(
-            x=points[:,0], y=points[:,1], z=points[:,2]*-1, 
-            mode='markers',
-            marker=dict(size=1, color=colors)
-        )
-    ],
-    layout=dict(
-        scene=dict(
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            zaxis=dict(visible=False)
+    # trans = image[['tx','ty','tz']]
+    # translation = trans.to_numpy()
+    # print(translation)
+
+    # # get camera position
+    # rt = quaternion_rotation_matrix(quaternions.transpose())
+    # print(rt)
+
+    # coords = np.matmul(rt.transpose(),translation.transpose())
+    # print(coords)
+
+    # read cloud
+    cloud = o3d.io.read_point_cloud("cloud2.ply")
+
+    points = np.asarray(cloud.points)
+
+    colors = None
+    if cloud.has_colors():
+        colors = np.asarray(cloud.colors)
+    elif cloud.has_normals():
+        colors = (0.5, 0.5, 0.5) + np.asarray(cloud.normals) * 0.5
+    else:
+        geometry.paint_uniform_color((1.0, 0.0, 0.0))
+        colors = np.asarray(geometry.colors)
+
+    fig = go.Figure(
+        data=[
+            go.Scatter3d(
+                x=points[:,0], y=points[:,1], z=points[:,2]*-1, 
+                mode='markers',
+                marker=dict(size=1, color=colors)
+            )
+        ],
+        layout=dict(
+            scene=dict(
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
+                zaxis=dict(visible=False)
+            )
         )
     )
-)
 
-camx=np.array([1,1,1]) * coords[0,0]
-camy=np.array([1,1,1]) * coords[0,1]
-camz=np.array([-1,-1,-1]) * coords[0,2]
+    # camx=np.array([1,1,1]) * coords[0,0]
+    # camy=np.array([1,1,1]) * coords[0,1]
+    # camz=np.array([-1,-1,-1]) * coords[0,2]
 
-fig.add_trace(go.Scatter3d(x=camx,y=camy,z=camz,
-                                 mode='markers'))
-fig.show()
+    # fig.add_trace(go.Scatter3d(x=camx,y=camy,z=camz,
+    #                                 mode='markers'))
+    fig.show()

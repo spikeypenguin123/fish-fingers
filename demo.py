@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import argparse
 import os
+from get_cloud import display_pointcloud
 
 def increase_contrast(image):
    
@@ -59,6 +60,8 @@ if __name__ == "__main__":
     #  Full program mode
     if mode == "f":
 
+        markers = []
+
         zip_filename = args["dir"]
         zip_file = zipfile.ZipFile(zip_filename)
         file_list = zip_file.infolist()
@@ -91,8 +94,11 @@ if __name__ == "__main__":
 
             fish_detector.display_bboxes(image, classified_bboxes, labels=labels, timer=1)
             
-            # TODO: get camera location of current image frame and add to pointcloud map
-            filename = f.filename
+            # Add camera location to pointcloud map
+            filename = f.filename[len('vid2_filtered/'):]
+            markers.append((filename, labels))
+
+        display_pointcloud(markers)
 
     # Classification only mode
     elif mode == "c":
